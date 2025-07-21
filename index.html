@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>fecha</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      /* General Styles */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: "Quicksand", sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        color: #333;
+        overflow: hidden; /* Prevent scroll */
+        position: relative;
+        /* Default background - akan diubah oleh JS dan class */
+        background: linear-gradient(to top right, #f8f8f8, #e0e0e0);
+        transition: background 1.5s ease-in-out; /* Smooth transition for background change */
+      }
+
+      /* Card Styles */
+      .card {
+        background: #fff;
+        padding: 30px;
+        border-radius: 25px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        animation: fadeIn 1.5s ease-in-out;
+        position: relative;
+        z-index: 2;
+        transition: all 0.5s ease-in-out; /* Smooth transitions for card changes */
+      }
+
+      /* Typography */
+      h1,
+      h2 {
+        font-family: "Pacifico", cursive;
+        color: #ff7e5f; /* Calm initial color */
+        margin: 0.5em 0;
+        transition: color 1s ease-in-out; /* Smooth transition for text color */
+      }
+
+      p {
+        font-size: 1.1em;
+        line-height: 1.6;
+      }
+
+      /* Input Styles */
+      input {
+        padding: 12px;
+        margin: 10px 0;
+        width: 100%;
+        border: 2px solid #ccc; /* Calm border */
+        border-radius: 10px;
+        font-size: 18px;
+        text-align: center;
+        color: #444;
+        transition: 0.3s ease;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #ff7e5f;
+        box-shadow: 0 0 12px rgba(255, 126, 95, 0.3);
+      }
+
+      /* Button Styles */
+      button {
+        background: #ff7e5f;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 15px;
+        color: #fff;
+        font-weight: bold;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: 0.3s ease;
+        margin-top: 10px;
+      }
+
+      button:hover {
+        background: #ff9a76;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 126, 95, 0.3);
+      }
+
+      /* Utility Classes */
+      .hidden {
+        display: none;
+      }
+
+      .fadein {
+        animation: fadeIn 1s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Confetti & Floating Emojis */
+      .confetti {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      .confetti-piece {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: red;
+        opacity: 0.7;
+        animation: confetti-fall linear infinite;
+      }
+
+      @keyframes confetti-fall {
+        0% {
+          transform: translateY(-10vh) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      .floating-emoji {
+        position: absolute;
+        animation: floatEmoji 10s infinite linear;
+        font-size: 2rem;
+        z-index: 1;
+        opacity: 0.6;
+        text-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      }
+
+      @keyframes floatEmoji {
+        0% {
+          transform: translateY(100vh) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 0.6;
+        }
+        100% {
+          transform: translateY(-100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      /* New class to hide emojis */
+      .hide-emojis .floating-emoji {
+        display: none;
+      }
+
+      /* Touch Particles */
+      .touch-particle {
+        position: absolute;
+        background-color: white; /* Default, will be overridden by JS */
+        border-radius: 50%;
+        opacity: 0;
+        transform: scale(0);
+        animation: particle-burst 0.7s ease-out forwards;
+        pointer-events: none;
+        z-index: 3;
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+      }
+
+      @keyframes particle-burst {
+        0% {
+          transform: scale(0);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1.5);
+          opacity: 0;
+        }
+      }
+
+      /* Initial Question Stage Styling (Calm) */
+      body.initial-stage {
+        background: linear-gradient(
+          to top right,
+          #f0f4f8,
+          #c9d6df
+        ); /* Soft blue-grey */
+      }
+
+      .initial-stage .card {
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      .initial-stage h1,
+      .initial-stage h2 {
+        color: #666;
+      }
+
+      .initial-stage input {
+        border-color: #ccc;
+      }
+
+      .initial-stage button {
+        background: #999;
+      }
+      .initial-stage button:hover {
+        background: #aaa;
+      }
+
+      /* Celebratory Stage Styling (Vibrant) */
+      body.celebration-stage {
+        background: linear-gradient(
+          to top right,
+          #ffecd2,
+          #fcb69f
+        ); /* Warm, celebratory */
+      }
+
+      .celebration-stage .card {
+        box-shadow: 0 15px 40px rgba(255, 126, 95, 0.3);
+      }
+
+      .celebration-stage h1,
+      .celebration-stage h2 {
+        color: #ff7e5f;
+      }
+
+      .celebration-stage input {
+        border-color: #ff7e5f;
+      }
+
+      .celebration-stage button {
+        background: #ff7e5f;
+      }
+      .celebration-stage button:hover {
+        background: #ff9a76;
+      }
+
+      /* Date Display */
+      #tanggal-display {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ff7e5f;
+        opacity: 0;
+        animation: showDate 3s ease-in-out forwards;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      @keyframes showDate {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        40% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        80% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-20px);
+          display: none;
+        }
+      }
+
+      /* Who Birthday Text */
+      #who-birthday-text {
+        font-family: "Pacifico", cursive;
+        font-size: 2.2rem;
+        color: #6a0dad; /* A nice purple for emphasis */
+        margin: 0.5em 0;
+        opacity: 0;
+        animation: showWhoBirthday 2.5s ease-in-out forwards;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      @keyframes showWhoBirthday {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        40% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        80% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-20px);
+          display: none;
+        }
+      }
+
+      /* Cake Animation */
+      #cake {
+        width: 80px;
+        max-width: 80%;
+        margin: 20px auto;
+        animation: cakeUp 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        transform: translateY(200px);
+        opacity: 0;
+        filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.2));
+      }
+
+      @keyframes cakeUp {
+        from {
+          transform: translateY(200px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      /* Photo Card */
+      #photo-card {
+        margin-top: 30px;
+        max-height: 500px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: fadeIn 1s ease-in-out;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+      }
+
+      #main-card {
+        transform: scale(0.8);
+      }
+
+      #webcam-photo,
+      #video {
+        border-radius: 15px;
+        width: 200px;
+        height: 270px;
+        object-fit: cover;
+        margin-top: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        background-color: #f0f0f0;
+      }
+
+
+      /* Responsive Adjustments */
+      @media (max-width: 600px) {
+        .card {
+          padding: 20px;
+          border-radius: 15px;
+        }
+
+        h1 {
+          font-size: 1.8em;
+        }
+
+        h2 {
+          font-size: 1.3em;
+        }
+
+        input {
+          padding: 10px;
+          font-size: 16px;
+        }
+
+        button {
+          padding: 10px 20px;
+          font-size: 1em;
+        }
+
+        #tanggal-display {
+          font-size: 1.8rem;
+        }
+
+        #who-birthday-text {
+          font-size: 1.8rem;
+        }
+
+        #cake {
+          width: 180px;
+        }
+
+        .floating-emoji {
+          font-size: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body class="initial-stage hide-emojis">
+    <div class="confetti" id="confetti"></div>
+    <div class="card" id="main-card">
+      <div id="questsatu" class="fadein">
+        <h2>
+          10 + 5 + 7
+        </h2>
+        <input
+          id="first"
+          type="text"
+          placeholder="Masukkan jawaban di sini..."
+          autocomplete="off"
+        />
+        <p id="infosatu" class="info-text"></p>
+        <button onclick="checkSatu()">Jawab</button>
+      </div>
+      <div id="questdua" class="hidden fadein">
+        <h2>28 ÷ 4</h2>
+        <input
+          id="second"
+          type="text"
+          placeholder="Masukkan jawaban di sini..."
+          autocomplete="off"
+        />
+        <p id="infodua" class="info-text"></p>
+        <button onclick="checkDua()">Jawab</button>
+      </div>
+      <div id="questtiga" class="hidden fadein">
+        <h2>
+          5 × 405
+        </h2>
+        <input
+          id="third"
+          type="text"
+          placeholder="Masukkan jawaban di sini..."
+          autocomplete="off"
+        />
+        <p id="infotiga" class="info-text"></p>
+        <button onclick="checkTiga()">Jawab</button>
+      </div>
+      <div id="tanggal-display" class="hidden">22 - 07 - 2025</div>
+      <div id="who-birthday-text" class="hidden">
+        Ada yang ulang tahun nihh!
+      </div>
+      <div id="final-message" class="hidden">
+        <h1>🎊🎂🎊</h1>
+        <h1>Selamat Ulang Tahun 🎉</h1>
+        <p>
+          Semoga hari-harimu penuh berkah dan kebahagiaan, sehat selalu, selalu
+          diberikan rezeki dan kelancaran begawi.
+        </p>
+        <p>🎉🥳🎊</p>
+        <img
+          id="cake"
+          class="hidden"
+        />
+        <div id="photo-card" class="hidden">
+          <h2>Ucapan Spesial</h2>
+          <p>Abadikan senyummu di hari ini!</p>
+          <video id="video" autoplay playsinline></video>
+          <canvas id="canvas" class="hidden"></canvas>
+          <button onclick="capturePhoto()">Ambil Foto</button>
+          <img id="webcam-photo" class="hidden" />
+        </div>
+      </div>
+    </div>
+
+    <audio id="question-music" loop>
+      <source src="/soft-piano-72454.mp3" type="audio/mpeg" />
+      Your browser does not support the audio element.
+    </audio>
+    <audio id="celebration-music" loop>
+      <source
+        src="/HAPPY Birthday Song, Happy Birthday to You.mp3"
+        type="audio/mpeg"
+      />
+      Your browser does not support the audio element.
+    </audio>
+    <audio id="clapping-sound">
+      <source src="/applause-cheer-236786.mp3" />
+      Your browser does not support the audio element.
+    </audio>
+
+    <script>
+      const quests = ["questsatu", "questdua", "questtiga"];
+      const answers = ["22", "7", "2025"];
+      const infos = ["infosatu", "infodua", "infotiga"];
+
+      const questionMusic = document.getElementById("question-music");
+      const celebrationMusic = document.getElementById("celebration-music");
+      const clappingSound = document.getElementById("clapping-sound");
+      let celebrationStarted = false; // Flag untuk memastikan partikel hanya muncul setelah perayaan
+
+      // Panggil generateFloatingEmojis dan mulai musik pertanyaan saat halaman dimuat
+      window.onload = () => {
+        // Kita tidak memanggil generateFloatingEmojis di sini lagi untuk memastikan mereka awalnya tersembunyi
+        document.body.classList.add("initial-stage");
+        // Coba putar musik pertanyaan, jika gagal karena auto-play policy, akan diputar saat interaksi pertama
+        questionMusic
+          .play()
+          .catch((e) =>
+            console.log(
+              "Auto-play blocked for question music. Will play on first interaction."
+            )
+          );
+      };
+
+      // Event listener untuk interaksi pengguna pertama kali
+      document.addEventListener("click", function playInitialMusic() {
+        questionMusic
+          .play()
+          .catch((e) =>
+            console.log(
+              "Failed to play question music on click, maybe already playing?"
+            )
+          );
+        document.removeEventListener("click", playInitialMusic); // Hapus listener setelah interaksi pertama
+      });
+
+      function generateFloatingEmojis() {
+        const emojis = ["🎈", "🎉", "🎊", "🥳", "✨", "💖", "🎁", "🎂", "🍰"];
+        const emojiContainer = document.body;
+        // Hapus emoji yang sudah ada sebelum membuat yang baru
+        document
+          .querySelectorAll(".floating-emoji")
+          .forEach((emoji) => emoji.remove());
+
+        for (let i = 0; i < 30; i++) {
+          const emoji = document.createElement("div");
+          emoji.classList.add("floating-emoji");
+          emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          emoji.style.left = Math.random() * 100 + "vw";
+          emoji.style.animationDelay = Math.random() * 10 + "s";
+          emoji.style.animationDuration = Math.random() * 8 + 7 + "s";
+          emoji.style.fontSize = Math.random() * 1.5 + 1.2 + "rem";
+          emojiContainer.appendChild(emoji);
+        }
+      }
+
+      // Fungsi untuk menangani jawaban
+      function handleAnswer(index) {
+        const inputElement = document.getElementById(
+          ["first", "second", "third"][index]
+        );
+        const infoElement = document.getElementById(infos[index]);
+        if (
+          inputElement.value.trim().toLowerCase() ===
+          answers[index].toLowerCase()
+        ) {
+          document.getElementById(quests[index]).classList.add("hidden");
+          if (index < quests.length - 1) {
+            document
+              .getElementById(quests[index + 1])
+              .classList.remove("hidden");
+          } else {
+            // Semua pertanyaan terjawab
+            showTanggal();
+            document.body.classList.remove("initial-stage");
+            document.body.classList.add("celebration-stage");
+            questionMusic.pause(); // Hentikan musik pertanyaan
+            questionMusic.currentTime = 0; // Reset waktu
+            celebrationMusic
+              .play()
+              .catch((e) =>
+                console.log("Auto-play blocked for celebration music.")
+              ); // Mulai musik perayaan
+            clappingSound
+              .play()
+              .catch((e) => console.log("Failed to play clapping sound.")); // Mainkan suara tepuk tangan
+            celebrationStarted = true; // Aktifkan flag perayaan
+
+            // Munculkan kembali partikel emoji saat ucapan selamat muncul
+            document.body.classList.remove("hide-emojis");
+            // generateFloatingEmojis(); // Panggil ini di sini jika ingin emoji muncul bersamaan dengan "Selamat Ulang Tahun"
+          }
+          infoElement.textContent = "";
+        } else {
+          infoElement.textContent = "Jawaban salah! Coba lagi.";
+          infoElement.style.color = "#e74c3c";
+          infoElement.classList.add("fadein");
+          setTimeout(() => {
+            infoElement.textContent = "";
+            infoElement.style.color = "";
+          }, 2000);
+        }
+      }
+
+      function checkSatu() {
+        handleAnswer(0);
+      }
+      function checkDua() {
+        handleAnswer(1);
+      }
+      function checkTiga() {
+        handleAnswer(2);
+      }
+
+      function showTanggal() {
+        const tanggalDisplay = document.getElementById("tanggal-display");
+        const whoBirthdayText = document.getElementById("who-birthday-text");
+        const finalMessage = document.getElementById("final-message");
+        const cakeElement = document.getElementById("cake"); // Dapatkan elemen kue
+
+        // Tampilkan tanggal lengkap
+        tanggalDisplay.classList.remove("hidden");
+
+        setTimeout(() => {
+          // Setelah tanggal lengkap menghilang, tampilkan teks "Ada yang ulang tahun nihh!"
+          tanggalDisplay.classList.add("hidden");
+          whoBirthdayText.classList.remove("hidden");
+
+          setTimeout(() => {
+            // Setelah teks "Ada yang ulang tahun nihh!" menghilang, tampilkan ucapan ulang tahun
+            whoBirthdayText.classList.add("hidden");
+            finalMessage.classList.remove("hidden");
+            cakeElement.classList.remove("hidden"); // Tampilkan kue
+            generateConfetti();
+            generateFloatingEmojis(); // Panggil untuk menampilkan emoji
+            startWebcam();
+          }, 3000); // Teks "Ada yang ulang tahun nihh!" muncul selama 3 detik
+        }, 4000); // Tanggal lengkap muncul selama 4 detik (sama seperti sebelumnya)
+      }
+
+      function generateConfetti() {
+        const confettiContainer = document.getElementById("confetti");
+        const colors = [
+          "#f44336",
+          "#e91e63",
+          "#9c27b0",
+          "#673ab7",
+          "#3f51b5",
+          "#2196f3",
+          "#03a9f4",
+          "#00bcd4",
+          "#009688",
+          "#4CAF50",
+          "#8BC34A",
+          "#CDDC39",
+          "#FFEB3B",
+          "#FFC107",
+          "#FF9800",
+          "#FF5722",
+        ];
+        for (let i = 0; i < 100; i++) {
+          const piece = document.createElement("div");
+          piece.classList.add("confetti-piece");
+          piece.style.left = Math.random() * 100 + "%";
+          piece.style.animationDuration = 2 + Math.random() * 3 + "s";
+          piece.style.animationDelay = Math.random() * 2 + "s";
+          piece.style.backgroundColor =
+            colors[Math.floor(Math.random() * colors.length)];
+          piece.style.width = piece.style.height = 6 + Math.random() * 8 + "px";
+          confettiContainer.appendChild(piece);
+        }
+      }
+
+      function startWebcam() {
+        const videoElement = document.getElementById("video");
+        const photoCard = document.getElementById("photo-card");
+        const captureBtn = photoCard.querySelector("button");
+
+        photoCard.classList.remove("hidden");
+        videoElement.classList.remove("hidden");
+
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices
+            .getUserMedia({ video: true })
+            .then((stream) => {
+              videoElement.srcObject = stream;
+              videoElement.play();
+              captureBtn.classList.remove("hidden");
+            })
+            .catch((err) => {
+              console.error("Error accessing webcam: ", err);
+              photoCard.innerHTML =
+                "<h2>Ucapan Spesial</h2><p>Maaf, tidak dapat mengakses kamera. Pastikan Anda memberikan izin kamera.</p>";
+            });
+        } else {
+          photoCard.innerHTML =
+            "<h2>Ucapan Spesial</h2><p>Browser Anda tidak mendukung akses kamera.</p>";
+        }
+      }
+
+      function capturePhoto() {
+        const videoElement = document.getElementById("video");
+        const canvasElement = document.getElementById("canvas");
+        const imgElement = document.getElementById("webcam-photo");
+        const captureBtn = document
+          .getElementById("photo-card")
+          .querySelector("button");
+
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+
+        const ctx = canvasElement.getContext("2d");
+        ctx.drawImage(
+          videoElement,
+          0,
+          0,
+          canvasElement.width,
+          canvasElement.height
+        );
+
+        imgElement.src = canvasElement.toDataURL("image/png");
+        imgElement.classList.remove("hidden");
+        videoElement.classList.add("hidden");
+        captureBtn.classList.add("hidden");
+
+        if (videoElement.srcObject) {
+          videoElement.srcObject.getTracks().forEach((track) => track.stop());
+        }
+      }
+
+      // --- Partikel Sentuh ---
+      document.addEventListener("click", function (e) {
+        // Hanya aktifkan partikel jika mode perayaan sudah dimulai
+        if (celebrationStarted) {
+          const touchParticleColors = [
+            "#FF6F61",
+            "#6B5B95",
+            "#88B04B",
+            "#F7CAC9",
+            "#92A8D1",
+            "#955251",
+            "#B565A7",
+            "#009B77",
+            "#DD4124",
+            "#D65076",
+          ];
+          for (let i = 0; i < 5; i++) {
+            // Buat beberapa partikel per klik
+            const particle = document.createElement("div");
+            particle.classList.add("touch-particle");
+            // Posisi partikel di sekitar titik klik/sentuh
+            particle.style.left = e.clientX + (Math.random() - 0.5) * 50 + "px";
+            particle.style.top = e.clientY + (Math.random() - 0.5) * 50 + "px";
+            particle.style.width = particle.style.height =
+              5 + Math.random() * 10 + "px"; // Ukuran random
+            particle.style.animationDelay = i * 0.05 + "s"; // Delay kecil antar partikel
+            particle.style.backgroundColor =
+              touchParticleColors[
+                Math.floor(Math.random() * touchParticleColors.length)
+              ]; // Warna acak
+            document.body.appendChild(particle);
+
+            // Hapus partikel setelah animasinya selesai
+            particle.addEventListener("animationend", () => {
+              particle.remove();
+            });
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
